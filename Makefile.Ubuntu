@@ -1,0 +1,8 @@
+# WILL NOT BE PUBLISHED
+# Desktop linux makefile
+CUSTOM_BUILD_TYPE := debug
+CUSTOM_PLATFORM   := x86
+
+STRIP=strip
+
+include Makefile.inc
