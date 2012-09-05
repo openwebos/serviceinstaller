@@ -1,6 +1,5 @@
 Summary
-========
-
+-------
 serviceinstaller is an extensible object oriented component used to add service components to webOS.
 
 # Copyright and License Information
