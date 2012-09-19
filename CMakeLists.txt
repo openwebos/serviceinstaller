@@ -30,16 +30,14 @@ include(FindPkgConfig)
 pkg_check_modules(GLIB2 REQUIRED glib-2.0)
 webos_add_compiler_flags(ALL ${GLIB2_CFLAGS})
 
-# -- check for pbnjson c and cpp libraries
+# -- check for pbnjson_c and pbnjson_cpp
 find_library(PBNJSON_C NAMES pbnjson_c)
-if (PBNJSON_C STREQUAL "PBNJSON_C-NOTFOUND")
-        MESSAGE(FATAL_ERROR "Failed to find pbnjson C library. Please install")
-endif()
+pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
+webos_add_compiler_flags(ALL ${PBNJSON_C_CFLAGS})
 
 find_library(PBNJSON_CPP NAMES pbnjson_cpp)
-if (PBNJSON_CPP STREQUAL "PBNJSON_CPP-NOTFOUND")
-        MESSAGE(FATAL_ERROR "Failed to find pbnjson CPP library. Please install")
-endif()
+pkg_check_modules(PBNJSON_CPP REQUIRED pbnjson_cpp)
+webos_add_compiler_flags(ALL ${PBNJSON_CPP_CFLAGS})
 
 # -- check for rolegen 
 pkg_check_modules(ROLEGEN REQUIRED rolegen)
@@ -69,8 +67,8 @@ target_link_libraries(serviceinstaller
                       ${GTHREAD2_LDFLAGS}
                       ${GXML2_LDFLAGS}
                       ${LS2_LDFLAGS}
-                      ${PBNJSON_C}
-                      ${PBNJSON_CPP}
+                      ${PBNJSON_C_LDFLAGS}
+                      ${PBNJSON_CPP_LDFLAGS}
                       ${ROLEGEN_LDFLAGS}
                       )
 
