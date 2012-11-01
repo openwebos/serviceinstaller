@@ -72,4 +72,4 @@ target_link_libraries(serviceinstaller
                       ${ROLEGEN_LDFLAGS}
                       )
 
-webos_build_library(NOHEADERS)
+webos_build_library()
