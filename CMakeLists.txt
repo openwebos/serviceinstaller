@@ -61,7 +61,7 @@ include_directories(include/public)
 file(GLOB SOURCE_FILES serviceinstall.cpp)
 
 # -- static library
-add_library(serviceinstaller ${SOURCE_FILES})
+add_library(serviceinstaller SHARED ${SOURCE_FILES})
 target_link_libraries(serviceinstaller 
                       ${GLIB2_LDFLAGS} 
                       ${GTHREAD2_LDFLAGS}
