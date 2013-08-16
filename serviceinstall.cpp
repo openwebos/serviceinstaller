@@ -59,8 +59,8 @@ static bool fexists(string filename)
 
 static string getAppDirectory(string root, string id, string type)
 {
-	string appDirectory= root;
-	appDirectory += "/usr/palm/services/" + id;
+	string appDirectory;
+	appDirectory = root + WEBOS_INSTALL_WEBOS_SERVICESDIR + "/" + id;
 	return appDirectory;
 }
 
@@ -76,7 +76,7 @@ static string getPrivateEndpointDirectory(string root)
 	return endpointDirectory;
 }
 
-static void generateEndpoint(string id, string serviceDirectory, string endpointDirectory) 
+static void generateEndpoint(string id, string serviceDirectory, string endpointDirectory)
 {
 	string line;
 	string destinationPath = endpointDirectory + "/" + id;
@@ -92,18 +92,18 @@ static void generateEndpoint(string id, string serviceDirectory, string endpoint
 
 	DBG("Creating %s", destinationPath.c_str());
 
-	ofstream newfile (destinationPath.c_str());	
+	ofstream newfile (destinationPath.c_str());
 
     if  (newfile.is_open())
     {
-		
+
 		newfile << "[D-BUS Service]" << endl;
 		newfile << "Name=" << id << endl;
-		newfile << "Exec=/usr/bin/run-js-service -n "<< serviceDirectory << endl;
-		
+		newfile << "Exec=" << WEBOS_INSTALL_BINDIR << "/run-js-service -n "<< serviceDirectory << endl;
+
 		newfile.close();
 	}
-	
+
 }
 
 static void deleteEndpoint(string id, string endpointDirectory)
@@ -116,10 +116,11 @@ static void deleteEndpoint(string id, string endpointDirectory)
 }
 
 static void deleteRoleFiles(string id)
-{	
-	string roleRoot = ROLE_FILE_PATH;
-	string pubPath = roleRoot  + "/pub/" + id + ".json";
-	string prvPath = roleRoot + "/prv/" + id + ".json";
+{
+    string suffix = "/" + id + ".json";
+	string pubPath = WEBOS_INSTALL_SYSBUS_DYNPUBROLESDIR + suffix;
+	string prvPath = WEBOS_INSTALL_SYSBUS_DYNPRVROLESDIR + suffix;
+
 
 	if (fexists(pubPath)) {
 		DBG("Removing %s", pubPath.c_str());
@@ -143,19 +144,19 @@ static void runConfigurator(string id, string serviceDirectory, string type, boo
 	LSHandle *sh = NULL;
 	string url = CONFIGURATOR_REGISTER_URL;
 	string configuratorType;
-	
+
 	if (type.compare(TYPE_SERVICE) == 0)
 		configuratorType = "service";
 	else
 		configuratorType = "app";
-	
-	string empty = ""; 
+
+	string empty = "";
 	string payload = "[{\"id\":\"" + id + "\","
-			+  "\"type\":\"" + configuratorType +"\"," 
+			+  "\"type\":\"" + configuratorType +"\","
 			+  "\"location\":\"third party\"}]";
-		
+
 	GMainContext *mainContext = g_main_context_new();
-    mainLoop = g_main_loop_new(mainContext, FALSE); 
+    mainLoop = g_main_loop_new(mainContext, FALSE);
     if (mainLoop == NULL) goto error;
 
     bool retVal;
@@ -169,7 +170,7 @@ static void runConfigurator(string id, string serviceDirectory, string type, boo
         goto error;
     }
 
-    retVal = LSGmainAttach(sh, mainLoop, &lserror); 
+    retVal = LSGmainAttach(sh, mainLoop, &lserror);
 
     if (!retVal)
     {
@@ -177,7 +178,7 @@ static void runConfigurator(string id, string serviceDirectory, string type, boo
         LSErrorFree (&lserror);
         goto error;
     }
-	
+
 	if (!install)
 		url = CONFIGURATOR_UNREGISTER_URL;
 
@@ -195,7 +196,7 @@ static void runConfigurator(string id, string serviceDirectory, string type, boo
     }
 
 	g_main_loop_run(mainLoop);
-	
+
 error:
 
     if (mainLoop)
@@ -219,61 +220,61 @@ static void updateLunaService()
 {
 	// temporary until LS has an API or mechanism to pick up changes
 	DBG("Updating LS Hub %s", "");
-	int result = system("/usr/bin/ls-control scan-services");
+	int result = system(WEBOS_INSTALL_SBINDIR "/ls-control scan-services");
 }
 
 
-void installApp(string id, string type, string root) 
+void installApp(string id, string type, string root)
 {
 	string appDirectory = getAppDirectory(root, id, type);
-	
+
 	if (type.compare(TYPE_SERVICE) == 0) {
-		
+
 		DBG("Installing service files %s","");
 
 		// generate roles for LS2 permissions
 		tritonGenerateRole(id);
-						
+
 		// create a hook for LS2 to know how to launch
 		string endpointDirectory = getPublicEndpointDirectory(root);
 		generateEndpoint(id, appDirectory, endpointDirectory);
 		endpointDirectory = getPrivateEndpointDirectory(root);
 		generateEndpoint(id, appDirectory, endpointDirectory);
-		
+
 		// tell the hub there's a new service in town
 		updateLunaService();
 
 	}
-	
+
 	// handle configurator for MojoDB
 	runConfigurator(id, appDirectory, type, true);
-	
+
 }
 
-void uninstallApp(string id, string type, string root) 
-{	
-	
+void uninstallApp(string id, string type, string root)
+{
+
 	string appDirectory = getAppDirectory(root, id, type);
-	
+
 	// delete the role files
 	deleteRoleFiles(id);
-		
+
 	if (type.compare(TYPE_SERVICE) == 0) {
-		
+
 		DBG("Removing service files %s","");
-			
+
 		// delete the endpoint files
 		string endpointDirectory = getPublicEndpointDirectory(root);
 		deleteEndpoint(id, endpointDirectory);
 		endpointDirectory = getPrivateEndpointDirectory(root);
 		deleteEndpoint(id, endpointDirectory);
-		
+
 		// tell the hub something changed
 		updateLunaService();
 	}
-	
+
 	// handle configurator for MojoDB
 	runConfigurator(id, appDirectory, type, false);
-	
+
 }
 

@@ -25,7 +25,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <glib.h>
-#include <lunaservice.h>
+#include <luna-service2/lunaservice.h>
 #include <string.h>
 #include <pbnjson.hpp>
 #include "rolegen.h"
@@ -35,9 +35,8 @@
 #define CONFIGURATOR_REGISTER_URL "palm://com.palm.configurator/scan"
 #define CONFIGURATOR_UNREGISTER_URL "palm://com.palm.configurator/unconfigure"
 
-#define ROLE_FILE_PATH "/var/palm/ls2/roles"
-#define PUBLIC_ENDPOINT_ROOT "/var/palm/ls2/services/pub"
-#define PRIVATE_ENDPOINT_ROOT "/var/palm/ls2/services/prv"
+#define PUBLIC_ENDPOINT_ROOT WEBOS_INSTALL_SYSBUS_DYNPUBSERVICESDIR
+#define PRIVATE_ENDPOINT_ROOT WEBOS_INSTALL_SYSBUS_DYNPRVSERVICESDIR
 
 #define TYPE_SERVICE "services"
 #define TYPE_APP "applications"
